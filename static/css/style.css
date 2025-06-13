@@ -192,7 +192,6 @@ body.mobile #game-chat-gui {
   display: none !important;
 }
 
-
 body.mobile .chat-open-btn {
   position: fixed;
   left: 16px;
@@ -295,6 +294,58 @@ body.mobile #mobile-chat-send:active {
   background: #7f3fd5;
 }
 
+/* Joystick (адаптивно для мобилы) */
+body.mobile #joystick {
+  left: 10px;
+  bottom: 12px;
+  width: 68px;
+  height: 68px;
+  background: rgba(140,140,140,0.09);
+  box-shadow: 0 2px 9px #0001;
+}
+body.mobile #joystick-handle {
+  left: 19px;
+  top: 19px;
+  width: 30px;
+  height: 30px;
+  background: rgba(120,120,120,0.22);
+  box-shadow: 0 2px 9px #8881;
+  transition: all 0.14s cubic-bezier(.7,.03,.26,.99);
+}
+
+/* Minimap (адаптивно для мобилы) */
+body.mobile #minimap {
+  width: 50px !important;
+  height: 50px !important;
+  max-width: 90vw;
+  max-height: 90vw;
+  right: 8px !important;
+  bottom: 8px !important;
+  font-size: 8px !important;
+}
+#minimap {
+  width: 250px !important;
+  height: 250px !important;
+  max-width: 90vw;
+  max-height: 90vw;
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  background: #fff;
+  border: 2px solid #888;
+  border-radius: 8px;
+  z-index: 20;
+  opacity: 0.95;
+  font-size: 13px;
+}
+body.mobile #mobile-chat-messages::-webkit-scrollbar {
+  width: 0 !important;
+  background: transparent !important;
+}
+body.mobile #mobile-chat-messages {
+  scrollbar-width: none !important;
+}
+
 @media (orientation: landscape) and (max-width: 900px) {
   body.mobile #mobile-chat-gui {
     height: 100vh;
@@ -314,5 +365,38 @@ body.mobile #mobile-chat-send:active {
   }
   body.mobile #mobile-chat-messages {
     padding-bottom: 0;
+  }
+  body.mobile #joystick {
+    left: 4px;
+    bottom: 4px;
+    width: 55px;
+    height: 55px;
+  }
+  body.mobile #joystick-handle {
+    left: 10px;
+    top: 10px;
+    width: 25px;
+    height: 25px;
+  }
+  body.mobile #leaderboard {
+    font-size: 7px !important;
+    min-width: 44px !important;
+    max-width: 80px !important;
+    padding: 1px 3px !important;
+    top: 4px !important;
+    right: 4px !important;
+  }
+  body.mobile #leaderboard b {
+    font-size: 1em !important;
+    margin-bottom: 1px !important;
+  }
+  body.mobile #leaderboard table {
+    font-size: 7px !important;
+  }
+  body.mobile #minimap {
+    width: 50px !important;
+    height: 50px !important;
+    right: 4px !important;
+    bottom: 4px !important;
   }
 }

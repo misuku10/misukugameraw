@@ -88,9 +88,11 @@ body.mobile #game-chat-gui, body.mobile #leaderboard {
 `;
     document.head.appendChild(style);
     if (isMobile) {
-        createJoystick();
         document.body.classList.add('mobile');
+        createJoystick();
         createMobileChat();
+        let chatBtn = document.getElementById('open-chat-btn');
+        if (chatBtn) chatBtn.style.display = 'block';
     } else {
         createDesktopChat();
     }
@@ -381,6 +383,7 @@ function setupShooting() {
     onPointerDownShoot = function(e) {
         if (!player) return;
         if (joystickInUse || pointerOnJoystick) return;
+        if (isMobile && document.activeElement && document.activeElement.id === "mobile-chat-input") return;
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         if (activePointers.has(e.pointerId)) return;
         activePointers.add(e.pointerId);
@@ -882,7 +885,67 @@ function hideNickError() {
     if (err) err.style.display = 'none';
 }
 
-// === Мобильный чат ===
+function createJoystick() {
+    if (document.getElementById('joystick')) return;
+    joystick = document.createElement('div');
+    joystick.id = 'joystick';
+    joystick.style.position = 'fixed';
+    joystick.style.left = isMobile ? '10px' : '24px';
+    joystick.style.bottom = isMobile ? '12px' : '24px';
+    joystick.style.width = isMobile ? '68px' : '120px';
+    joystick.style.height = isMobile ? '68px' : '120px';
+    joystick.style.background = 'rgba(140,140,140,0.07)';
+    joystick.style.borderRadius = '50%';
+    joystick.style.zIndex = 200;
+    joystick.style.touchAction = 'none';
+    joystick.innerHTML = `<div id="joystick-handle" style="
+        position:absolute;left:${isMobile ? 19 : 45}px;top:${isMobile ? 19 : 45}px;width:30px;height:30px;
+        background:rgba(120,120,120,0.25);border-radius:50%;box-shadow:0 2px 9px #888">
+    </div>`;
+    document.body.appendChild(joystick);
+
+    const handle = joystick.querySelector('#joystick-handle');
+    let origin = {x: isMobile ? 34 : 60, y: isMobile ? 34 : 60};
+    let dragging = false;
+
+    function updateHandle(dx, dy) {
+        handle.style.left = (isMobile ? 19 : 45) + dx * (isMobile ? 20 : 40) + "px";
+        handle.style.top = (isMobile ? 19 : 45) + dy * (isMobile ? 20 : 40) + "px";
+    }
+
+    joystick.addEventListener('touchstart', e => {
+        e.preventDefault();
+        dragging = true;
+        joystickData.active = true;
+        joystickInUse = true;
+        pointerOnJoystick = true;
+        handle.style.transition = '';
+        document.body.style.userSelect = 'none';
+    }, {passive: false});
+    joystick.addEventListener('touchmove', e => {
+        if (!dragging) return;
+        const rect = joystick.getBoundingClientRect();
+        const touch = e.touches[0];
+        let dx = (touch.clientX - rect.left - origin.x) / (isMobile ? 20 : 48);
+        let dy = (touch.clientY - rect.top - origin.y) / (isMobile ? 20 : 48);
+        let len = Math.sqrt(dx*dx + dy*dy);
+        if (len > 1) { dx /= len; dy /= len; }
+        joystickData.dx = dx;
+        joystickData.dy = dy;
+        updateHandle(dx, dy);
+    }, {passive: false});
+    joystick.addEventListener('touchend', e => {
+        dragging = false;
+        joystickData.active = false;
+        joystickInUse = false;
+        pointerOnJoystick = false;
+        joystickData.dx = 0; joystickData.dy = 0;
+        handle.style.transition = 'all 0.2s';
+        updateHandle(0, 0);
+        document.body.style.userSelect = '';
+    }, {passive: false});
+}
+
 function createMobileChat() {
     if (document.getElementById('mobile-chat-gui')) return;
     const chat = document.createElement('div');
@@ -931,6 +994,7 @@ function createMobileChat() {
     };
     hideChatAndButton();
 }
+
 let chatMessages = [];
 function renderMobileChatMessages() {
     const box = document.getElementById('mobile-chat-messages');
@@ -963,7 +1027,6 @@ function chatInitSocket() {
     });
 }
 
-// === Десктоп чат (оставлен, если нужен) ===
 function createDesktopChat() {
     if (!document.getElementById('game-chat-gui')) {
         const chatDiv = document.createElement('div');
