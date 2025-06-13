@@ -40,8 +40,7 @@ document.addEventListener('selectstart', e => e.preventDefault());
 document.addEventListener('mousedown', e => { if (e.detail > 1) e.preventDefault(); });
 
 window.addEventListener('keydown', function(e) {
-    if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA"))
-        return;
+    if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA")) return;
     if (document.activeElement && document.activeElement.id === "name") return;
     const key = e.key.toLowerCase();
     if (["w","a","s","d","ц","ф","ы","в","arrowup","arrowdown","arrowleft","arrowright"].includes(key)) {
@@ -49,10 +48,8 @@ window.addEventListener('keydown', function(e) {
         e.preventDefault();
     }
 });
-
 window.addEventListener('keyup', function(e) {
-    if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA"))
-        return;
+    if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA")) return;
     if (document.activeElement && document.activeElement.id === "name") return;
     const key = e.key.toLowerCase();
     if (["w","a","s","d","ц","ф","ы","в","arrowup","arrowdown","arrowleft","arrowright"].includes(key)) {
@@ -93,28 +90,50 @@ body.mobile #game-chat-gui, body.mobile #leaderboard {
     if (isMobile) {
         createJoystick();
         document.body.classList.add('mobile');
+        createMobileChat();
+    } else {
+        createDesktopChat();
     }
     setupShooting();
     hideChatAndButton();
 });
 
 function hideChatAndButton() {
-    let chatDiv = document.getElementById('game-chat-gui');
-    let chatBtn = document.getElementById('open-chat-btn');
-    if (chatDiv) chatDiv.style.display = 'none';
-    if (chatBtn) chatBtn.style.display = 'none';
+    if (isMobile) {
+        let chatDiv = document.getElementById('mobile-chat-gui');
+        let chatBtn = document.getElementById('open-chat-btn');
+        if (chatDiv) chatDiv.style.display = 'none';
+        if (chatBtn) chatBtn.style.display = 'block';
+    } else {
+        let chatDiv = document.getElementById('game-chat-gui');
+        let chatBtn = document.getElementById('open-chat-btn');
+        if (chatDiv) chatDiv.style.display = 'none';
+        if (chatBtn) chatBtn.style.display = 'none';
+    }
 }
 function showChatButton() {
     let chatBtn = document.getElementById('open-chat-btn');
     if (chatBtn) chatBtn.style.display = 'block';
 }
 function showChatGui() {
-    let chatDiv = document.getElementById('game-chat-gui');
-    if (chatDiv) chatDiv.style.display = isMobile ? 'flex' : 'block';
+    if (isMobile) {
+        let mchat = document.getElementById('mobile-chat-gui');
+        if (mchat) mchat.style.display = 'flex';
+        let input = document.getElementById('mobile-chat-input');
+        if (input) setTimeout(() => input.focus(), 120);
+    } else {
+        let chatDiv = document.getElementById('game-chat-gui');
+        if (chatDiv) chatDiv.style.display = 'block';
+    }
 }
 function hideChatGui() {
-    let chatDiv = document.getElementById('game-chat-gui');
-    if (chatDiv) chatDiv.style.display = 'none';
+    if (isMobile) {
+        let mchat = document.getElementById('mobile-chat-gui');
+        if (mchat) mchat.style.display = 'none';
+    } else {
+        let chatDiv = document.getElementById('game-chat-gui');
+        if (chatDiv) chatDiv.style.display = 'none';
+    }
 }
 
 window.addEventListener("storage", function(e) {
@@ -863,43 +882,89 @@ function hideNickError() {
     if (err) err.style.display = 'none';
 }
 
-let chatMessages = [];
+// === Мобильный чат ===
+function createMobileChat() {
+    if (document.getElementById('mobile-chat-gui')) return;
+    const chat = document.createElement('div');
+    chat.id = 'mobile-chat-gui';
+    chat.style.display = 'none';
+    chat.innerHTML = `
+      <div id="mobile-chat-header">
+        <button id="mobile-chat-close" class="chat-close-btn" type="button">×</button>
+      </div>
+      <div id="mobile-chat-messages"></div>
+      <form id="mobile-chat-form" autocomplete="off">
+        <input id="mobile-chat-input" maxlength="120" placeholder="Введите сообщение..." autocomplete="off" />
+        <button id="mobile-chat-send" type="submit">⮞</button>
+      </form>
+    `;
+    document.body.appendChild(chat);
 
-function renderChatMessages() {
-    const box = document.getElementById('game-chat-messages');
+    const openBtn = document.createElement('button');
+    openBtn.id = 'open-chat-btn';
+    openBtn.className = 'chat-open-btn';
+    openBtn.textContent = 'Чат';
+    openBtn.onclick = () => {
+        chat.style.display = 'flex';
+        openBtn.style.display = 'none';
+        setTimeout(() => {
+            document.getElementById('mobile-chat-input').focus();
+        }, 150);
+    };
+    openBtn.style.display = 'block';
+    document.body.appendChild(openBtn);
+
+    document.getElementById('mobile-chat-close').onclick = () => {
+        chat.style.display = 'none';
+        openBtn.style.display = 'block';
+    };
+
+    document.getElementById('mobile-chat-form').onsubmit = function(e) {
+        e.preventDefault();
+        let input = document.getElementById('mobile-chat-input');
+        let text = input.value.trim();
+        if (text && isValidChatText(text)) {
+            if (socket) socket.emit('chat_msg', {text});
+            input.value = '';
+        }
+        return false;
+    };
+    hideChatAndButton();
+}
+let chatMessages = [];
+function renderMobileChatMessages() {
+    const box = document.getElementById('mobile-chat-messages');
     if (!box) return;
     box.innerHTML = chatMessages.map(msg =>
         `<div><b style="color:#c2f;">${escapeHtml(msg.nick)}</b>: ${escapeHtml(msg.text)}</div>`
     ).join('');
     box.scrollTop = box.scrollHeight;
 }
-
 function escapeHtml(str) {
     return str.replace(/[<>&"]/g, s => ({
         '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'
     }[s]));
 }
-
 function isValidChatText(str) {
     return /^[a-zA-Z0-9а-яА-ЯёЁ .,!?'"()\[\]{};:+=_\- ]+$/i.test(str)
         && !/(https?:\/\/|www\.|@|\/)/gi.test(str);
 }
-
 function chatInitSocket() {
     if (!socket) return;
     socket.on('chat_history', msgs => {
         chatMessages = msgs.slice(-100);
-        renderChatMessages();
+        if (isMobile) renderMobileChatMessages();
     });
     socket.on('chat_msg', msg => {
         if (!msg.nick || !msg.text) return;
         chatMessages.push(msg);
         if (chatMessages.length > 100) chatMessages.shift();
-        renderChatMessages();
+        if (isMobile) renderMobileChatMessages();
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// === Десктоп чат (оставлен, если нужен) ===
+function createDesktopChat() {
     if (!document.getElementById('game-chat-gui')) {
         const chatDiv = document.createElement('div');
         chatDiv.id = 'game-chat-gui';
@@ -937,99 +1002,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         };
     }
-    createChatButton();
-    createChatCloseButton();
-    hideChatAndButton();
-});
-
-function createJoystick() {
-    joystick = document.createElement('div');
-    joystick.id = 'joystick';
-    joystick.style.position = 'fixed';
-    joystick.style.left = '24px';
-    joystick.style.bottom = '24px';
-    joystick.style.width = '120px';
-    joystick.style.height = '120px';
-    joystick.style.background = 'rgba(140,140,140,0.07)';
-    joystick.style.borderRadius = '50%';
-    joystick.style.zIndex = 200;
-    joystick.style.touchAction = 'none';
-    joystick.innerHTML = `<div id="joystick-handle" style="
-        position:absolute;left:45px;top:45px;width:30px;height:30px;
-        background:rgba(120,120,120,0.25);border-radius:50%;box-shadow:0 2px 9px #888">
-    </div>`;
-    document.body.appendChild(joystick);
-
-    const handle = joystick.querySelector('#joystick-handle');
-    let origin = {x: 60, y: 60};
-    let dragging = false;
-
-    function updateHandle(dx, dy) {
-        handle.style.left = (45 + dx * 40) + "px";
-        handle.style.top = (45 + dy * 40) + "px";
-    }
-
-    joystick.addEventListener('touchstart', e => {
-        e.preventDefault();
-        dragging = true;
-        joystickData.active = true;
-        joystickInUse = true;
-        pointerOnJoystick = true;
-        handle.style.transition = '';
-        document.body.style.userSelect = 'none';
-    }, {passive: false});
-    joystick.addEventListener('touchmove', e => {
-        if (!dragging) return;
-        const rect = joystick.getBoundingClientRect();
-        const touch = e.touches[0];
-        let dx = (touch.clientX - rect.left - origin.x) / 48;
-        let dy = (touch.clientY - rect.top - origin.y) / 48;
-        let len = Math.sqrt(dx*dx + dy*dy);
-        if (len > 1) { dx /= len; dy /= len; }
-        joystickData.dx = dx;
-        joystickData.dy = dy;
-        updateHandle(dx, dy);
-    }, {passive: false});
-    joystick.addEventListener('touchend', e => {
-        dragging = false;
-        joystickData.active = false;
-        joystickInUse = false;
-        pointerOnJoystick = false;
-        joystickData.dx = 0; joystickData.dy = 0;
-        handle.style.transition = 'all 0.2s';
-        updateHandle(0, 0);
-        document.body.style.userSelect = '';
-    }, {passive: false});
 }
-
-function createChatButton() {
-    if (document.getElementById('open-chat-btn')) return;
-    if (!isMobile) return;
-    const btn = document.createElement('button');
-    btn.id = 'open-chat-btn';
-    btn.textContent = "Чат";
-    btn.className = 'chat-open-btn';
-    btn.onclick = () => {
-        showChatGui();
-        btn.style.display = "none";
-        let closeBtn = document.getElementById('close-chat-btn');
-        if (closeBtn) closeBtn.style.display = "flex";
-    };
-    btn.style.display = "none";
-    document.body.appendChild(btn);
-}
-function createChatCloseButton() {
-    if (document.getElementById('close-chat-btn')) return;
-    if (!isMobile) return;
-    const closeBtn = document.createElement('button');
-    closeBtn.id = 'close-chat-btn';
-    closeBtn.textContent = "×";
-    closeBtn.className = 'chat-close-btn';
-    closeBtn.onclick = () => {
-        hideChatGui();
-        showChatButton();
-        closeBtn.style.display = "none";
-    };
-    closeBtn.style.display = "none";
-    document.getElementById('game-chat-gui').appendChild(closeBtn);
+function renderChatMessages() {
+    const box = document.getElementById('game-chat-messages');
+    if (!box) return;
+    box.innerHTML = chatMessages.map(msg =>
+        `<div><b style="color:#c2f;">${escapeHtml(msg.nick)}</b>: ${escapeHtml(msg.text)}</div>`
+    ).join('');
+    box.scrollTop = box.scrollHeight;
 }
