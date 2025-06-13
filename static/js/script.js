@@ -34,6 +34,7 @@ let velocity = { x: 0, y: 0 };
 
 let onPointerDownShoot, onPointerUpShoot;
 let joystickInUse = false;
+let pointerOnJoystick = false;
 
 document.addEventListener('selectstart', e => e.preventDefault());
 document.addEventListener('mousedown', e => { if (e.detail > 1) e.preventDefault(); });
@@ -166,7 +167,7 @@ function connectSocketIO() {
         updateOthersSocket(lastPlayersList);
         startGameLoop();
         const chatDiv = document.getElementById('game-chat-gui');
-        if (chatDiv) chatDiv.style.display = "block";
+        if (chatDiv) chatDiv.style.display = "none";
     });
 
     socket.on('players', players => {
@@ -340,7 +341,7 @@ function setupShooting() {
 
     onPointerDownShoot = function(e) {
         if (!player) return;
-        if (joystickInUse) return;
+        if (joystickInUse || pointerOnJoystick) return;
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         if (activePointers.has(e.pointerId)) return;
         activePointers.add(e.pointerId);
@@ -953,6 +954,7 @@ function createJoystick() {
         dragging = true;
         joystickData.active = true;
         joystickInUse = true;
+        pointerOnJoystick = true;
         handle.style.transition = '';
         document.body.style.userSelect = 'none';
     }, {passive: false});
@@ -972,6 +974,7 @@ function createJoystick() {
         dragging = false;
         joystickData.active = false;
         joystickInUse = false;
+        pointerOnJoystick = false;
         joystickData.dx = 0; joystickData.dy = 0;
         handle.style.transition = 'all 0.2s';
         updateHandle(0, 0);
@@ -989,6 +992,8 @@ function createChatButton() {
     btn.onclick = () => {
         document.getElementById('game-chat-gui').style.display = "flex";
         btn.style.display = "none";
+        let closeBtn = document.getElementById('close-chat-btn');
+        if (closeBtn) closeBtn.style.display = "flex";
     };
     document.body.appendChild(btn);
 }
@@ -1002,6 +1007,8 @@ function createChatCloseButton() {
     closeBtn.onclick = () => {
         document.getElementById('game-chat-gui').style.display = "none";
         document.getElementById('open-chat-btn').style.display = "block";
+        closeBtn.style.display = "none";
     };
+    closeBtn.style.display = "none";
     document.getElementById('game-chat-gui').appendChild(closeBtn);
 }
