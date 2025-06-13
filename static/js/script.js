@@ -90,7 +90,6 @@ body.mobile #game-chat-gui, body.mobile #leaderboard {
     document.head.appendChild(style);
     if (isMobile) {
         createJoystick();
-        setupMobileShoot();
         document.body.classList.add('mobile');
     }
 });
@@ -331,12 +330,18 @@ function setupMouse() {
     });
 }
 
+// --- Универсальный обработчик выстрелов (и для мыши, и для тача, без дублей)
 function setupShooting() {
-    document.addEventListener('mousedown', function(e) {
+    document.addEventListener('pointerdown', function(e) {
         if (!player) return;
-        if (e.button === 0) {
-            shootFireball();
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        // На мобиле вычисляем mouseAngle для тача (центр экрана)
+        if (e.pointerType !== 'mouse') {
+            let cx = window.innerWidth/2;
+            let cy = window.innerHeight/2;
+            mouseAngle = Math.atan2(e.clientY - cy, e.clientX - cx);
         }
+        shootFireball();
     });
 }
 
@@ -388,15 +393,16 @@ function drawWorldBorder(ctx) {
     ctx.restore();
 }
 
+// --- Меньше миникарта на мобиле
 function createMinimap() {
     if (minimapElem) minimapElem.remove();
     minimapElem = document.createElement('canvas');
-    minimapElem.width = 200;
-    minimapElem.height = 200;
+    minimapElem.width = isMobile ? 100 : 200;
+    minimapElem.height = isMobile ? 100 : 200;
     minimapElem.id = 'minimap';
     minimapElem.style.position = 'absolute';
-    minimapElem.style.right = '24px';
-    minimapElem.style.bottom = '24px';
+    minimapElem.style.right = isMobile ? '8px' : '24px';
+    minimapElem.style.bottom = isMobile ? '8px' : '24px';
     minimapElem.style.background = '#fff';
     minimapElem.style.border = '2px solid #888';
     minimapElem.style.borderRadius = '8px';
@@ -413,20 +419,20 @@ function drawMinimap() {
     let scale = minimapElem.width / worldSize;
     ctx.strokeStyle = "#bbb";
     ctx.lineWidth = 1.2;
-    ctx.font = "13px Arial";
+    ctx.font = isMobile ? "8px Arial" : "13px Arial";
     ctx.fillStyle = "#444";
     for (let row = 0; row < gridRows; row++) {
         for (let col = 0; col < gridCols; col++) {
             let x = col * gridSize * scale;
             let y = row * gridSize * scale;
             ctx.strokeRect(x, y, gridSize * scale, gridSize * scale);
-            ctx.fillText(gridNames[row][col], x + 8, y + 22);
+            ctx.fillText(gridNames[row][col], x + (isMobile ? 4 : 8), y + (isMobile ? 12 : 22));
         }
     }
     if (player) {
         ctx.fillStyle = "#f00";
         ctx.beginPath();
-        ctx.arc(player.x * scale, player.y * scale, 7, 0, 2 * Math.PI);
+        ctx.arc(player.x * scale, player.y * scale, isMobile ? 3.5 : 7, 0, 2 * Math.PI);
         ctx.fill();
         ctx.strokeStyle = "#000";
         ctx.lineWidth = 1;
@@ -438,7 +444,7 @@ function drawMinimap() {
         let px = p.x * scale;
         let py = p.y * scale;
         ctx.beginPath();
-        ctx.arc(px, py, 5, 0, 2 * Math.PI);
+        ctx.arc(px, py, isMobile ? 2.5 : 5, 0, 2 * Math.PI);
         ctx.fill();
     });
 }
@@ -740,20 +746,21 @@ function updatePlayerCrown(players, leader) {
     }
 }
 
+// --- Меньше лидерборд на мобиле
 function showLeaderboard() {
     if (leaderboardElem) leaderboardElem.remove();
     leaderboardElem = document.createElement('div');
     leaderboardElem.id = "leaderboard";
     leaderboardElem.style.position = "fixed";
-    leaderboardElem.style.top = "16px";
-    leaderboardElem.style.right = "16px";
+    leaderboardElem.style.top = isMobile ? "8px" : "16px";
+    leaderboardElem.style.right = isMobile ? "8px" : "16px";
     leaderboardElem.style.background = "#fff";
     leaderboardElem.style.border = "2px solid #bbb";
     leaderboardElem.style.borderRadius = "8px";
     leaderboardElem.style.zIndex = 99;
-    leaderboardElem.style.padding = "12px 20px";
-    leaderboardElem.style.fontSize = "16px";
-    leaderboardElem.style.minWidth = "200px";
+    leaderboardElem.style.padding = isMobile ? "4px 8px" : "12px 20px";
+    leaderboardElem.style.fontSize = isMobile ? "10px" : "16px";
+    leaderboardElem.style.minWidth = isMobile ? "100px" : "200px";
     leaderboardElem.innerHTML = `<b>Лидеры</b>`;
     document.body.appendChild(leaderboardElem);
 }
@@ -950,18 +957,5 @@ function createJoystick() {
         handle.style.transition = 'all 0.2s';
         updateHandle(0, 0);
         document.body.style.userSelect = '';
-    }, {passive: false});
-}
-
-function setupMobileShoot() {
-    document.addEventListener('touchstart', function(e) {
-        if (e.target.closest('#joystick')) return;
-        if (!player) return;
-        let touch = e.touches[0];
-        let cx = window.innerWidth/2;
-        let cy = window.innerHeight/2;
-        let angle = Math.atan2(touch.clientY - cy, touch.clientX - cx);
-        mouseAngle = angle;
-        shootFireball();
     }, {passive: false});
 }
