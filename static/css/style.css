@@ -208,7 +208,7 @@ body.mobile .chat-open-btn {
 }
 
 body.mobile #mobile-chat-gui {
-  display: flex !important;
+  display: none;
   position: fixed;
   left: 0;
   top: 0;
@@ -220,6 +220,10 @@ body.mobile #mobile-chat-gui {
   justify-content: flex-end;
   align-items: stretch;
   transition: background 0.2s;
+}
+
+body.mobile #mobile-chat-gui.active {
+  display: flex !important;
 }
 
 body.mobile #mobile-chat-header {
@@ -294,7 +298,6 @@ body.mobile #mobile-chat-send:active {
   background: #7f3fd5;
 }
 
-/* Joystick (адаптивно для мобилы) */
 body.mobile #joystick {
   left: 10px;
   bottom: 12px;
@@ -312,8 +315,6 @@ body.mobile #joystick-handle {
   box-shadow: 0 2px 9px #8881;
   transition: all 0.14s cubic-bezier(.7,.03,.26,.99);
 }
-
-/* Minimap (адаптивно для мобилы) */
 body.mobile #minimap {
   width: 50px !important;
   height: 50px !important;

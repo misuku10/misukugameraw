@@ -91,13 +91,10 @@ body.mobile #game-chat-gui, body.mobile #leaderboard {
         document.body.classList.add('mobile');
         createJoystick();
         createMobileChat();
-        let chatBtn = document.getElementById('open-chat-btn');
-        if (chatBtn) chatBtn.style.display = 'block';
     } else {
         createDesktopChat();
     }
     setupShooting();
-    hideChatAndButton();
 });
 
 function hideChatAndButton() {
@@ -160,22 +157,26 @@ function showAntiBotOverlay() {
     antiBotOverlay.style.left = "0";
     antiBotOverlay.style.width = "100vw";
     antiBotOverlay.style.height = "100vh";
-    antiBotOverlay.style.background = "rgba(240,240,240,0.97)";
+    antiBotOverlay.style.background = "rgba(40,20,70,0.96)";
     antiBotOverlay.style.zIndex = "99999";
     antiBotOverlay.style.display = "flex";
     antiBotOverlay.style.flexDirection = "column";
     antiBotOverlay.style.justifyContent = "center";
     antiBotOverlay.style.alignItems = "center";
-    antiBotOverlay.style.filter = "grayscale(1)";
     antiBotOverlay.innerHTML = `
-        <h1 style="font-size:2.2rem; color:#222; margin-bottom:30px;">Вы уже находитесь в игре</h1>
-        <div style="font-size:1.3rem; color:#444;">Завершите игру в другой вкладке,<br>чтобы запустить здесь.</div>
+        <h1 style="font-size:2.2rem; color:#fff; margin-bottom:30px;">Вы уже находитесь в игре</h1>
+        <div style="font-size:1.3rem; color:#e0e0e0;">Завершите игру в другой вкладке,<br>чтобы запустить здесь.</div>
+        <button id="anti-bot-retry" style="margin-top:38px;font-size:1.2rem;background:#a26cf6;color:#fff;padding:12px 32px;border:none;border-radius:14px;box-shadow:0 2px 10px #8884;">Войти заново</button>
     `;
     document.body.appendChild(antiBotOverlay);
     gameLoopActive = false;
     if (socket && socket.connected) {
         socket.disconnect();
     }
+    document.getElementById('anti-bot-retry').onclick = function() {
+        localStorage.removeItem(LOCALSTORAGE_SESSION_KEY);
+        location.reload();
+    };
 }
 function hideAntiBotOverlay() {
     if (antiBotOverlay && antiBotOverlay.parentNode) {
@@ -992,7 +993,6 @@ function createMobileChat() {
         }
         return false;
     };
-    hideChatAndButton();
 }
 
 let chatMessages = [];
