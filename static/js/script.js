@@ -441,9 +441,7 @@ function drawMinimap() {
             let x = col * gridSize * scale;
             let y = row * gridSize * scale;
             ctx.strokeRect(x, y, gridSize * scale, gridSize * scale);
-            if (minimapElem.width >= 100) {
-                ctx.fillText(gridNames[row][col], x + (isMobile ? 2 : 8), y + (isMobile ? 6 : 22));
-            }
+            ctx.fillText(gridNames[row][col], x + (isMobile ? 2 : 8), y + (isMobile ? 6 : 22));
         }
     }
     if (player) {
