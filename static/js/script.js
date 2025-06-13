@@ -95,7 +95,27 @@ body.mobile #game-chat-gui, body.mobile #leaderboard {
         document.body.classList.add('mobile');
     }
     setupShooting();
+    hideChatAndButton();
 });
+
+function hideChatAndButton() {
+    let chatDiv = document.getElementById('game-chat-gui');
+    let chatBtn = document.getElementById('open-chat-btn');
+    if (chatDiv) chatDiv.style.display = 'none';
+    if (chatBtn) chatBtn.style.display = 'none';
+}
+function showChatButton() {
+    let chatBtn = document.getElementById('open-chat-btn');
+    if (chatBtn) chatBtn.style.display = 'block';
+}
+function showChatGui() {
+    let chatDiv = document.getElementById('game-chat-gui');
+    if (chatDiv) chatDiv.style.display = isMobile ? 'flex' : 'block';
+}
+function hideChatGui() {
+    let chatDiv = document.getElementById('game-chat-gui');
+    if (chatDiv) chatDiv.style.display = 'none';
+}
 
 window.addEventListener("storage", function(e) {
     if (e.key === LOCALSTORAGE_SESSION_KEY) {
@@ -166,8 +186,8 @@ function connectSocketIO() {
         showLeaderboard();
         updateOthersSocket(lastPlayersList);
         startGameLoop();
-        const chatDiv = document.getElementById('game-chat-gui');
-        if (chatDiv) chatDiv.style.display = "none";
+        showChatButton();
+        hideChatGui();
     });
 
     socket.on('players', players => {
@@ -919,7 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     createChatButton();
     createChatCloseButton();
-    document.getElementById('game-chat-gui').style.display = "none";
+    hideChatAndButton();
 });
 
 function createJoystick() {
@@ -990,11 +1010,12 @@ function createChatButton() {
     btn.textContent = "Чат";
     btn.className = 'chat-open-btn';
     btn.onclick = () => {
-        document.getElementById('game-chat-gui').style.display = "flex";
+        showChatGui();
         btn.style.display = "none";
         let closeBtn = document.getElementById('close-chat-btn');
         if (closeBtn) closeBtn.style.display = "flex";
     };
+    btn.style.display = "none";
     document.body.appendChild(btn);
 }
 function createChatCloseButton() {
@@ -1005,8 +1026,8 @@ function createChatCloseButton() {
     closeBtn.textContent = "×";
     closeBtn.className = 'chat-close-btn';
     closeBtn.onclick = () => {
-        document.getElementById('game-chat-gui').style.display = "none";
-        document.getElementById('open-chat-btn').style.display = "block";
+        hideChatGui();
+        showChatButton();
         closeBtn.style.display = "none";
     };
     closeBtn.style.display = "none";

@@ -1,3 +1,7 @@
+#game-chat-gui,
+#open-chat-btn {
+  display: none;
+}
 body {
   margin:0;
   background:#e0e0e0;
@@ -184,23 +188,23 @@ body {
   background: rgba(255,255,255,0.10);
 }
 body.mobile #game-chat-gui {
+  background: rgba(60,40,110,0.93) !important;
+  box-shadow: 0 2px 24px #222b;
   left: 0 !important;
   right: 0 !important;
-  top: 0 !important;
+  top: auto !important;
   bottom: 0 !important;
   width: 100vw !important;
   max-width: 100vw !important;
-  height: 100vh !important;
-  max-height: 100vh !important;
-  border-radius: 0 !important;
-  font-size: 15px !important;
-  z-index: 150 !important;
-  background: rgba(60,40,110,0.93) !important;
-  box-shadow: 0 2px 24px #222b;
+  height: auto !important;
+  max-height: 70vh !important;
+  min-height: 90px !important;
+  border-radius: 18px 18px 0 0 !important;
   display: flex !important;
   flex-direction: column;
   justify-content: flex-end;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 150 !important;
 }
 body.mobile #game-chat-messages {
   height: 70vh !important;
