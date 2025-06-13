@@ -32,12 +32,13 @@ let joystickData = {active: false, dx: 0, dy: 0};
 const maxSpeed = 4;
 let velocity = { x: 0, y: 0 };
 
+let onPointerDownShoot, onPointerUpShoot;
+
 document.addEventListener('selectstart', e => e.preventDefault());
 document.addEventListener('mousedown', e => { if (e.detail > 1) e.preventDefault(); });
 
 window.addEventListener('keydown', function(e) {
-    if (document.activeElement &&
-       (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA"))
+    if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA"))
         return;
     if (document.activeElement && document.activeElement.id === "name") return;
     const key = e.key.toLowerCase();
@@ -48,8 +49,7 @@ window.addEventListener('keydown', function(e) {
 });
 
 window.addEventListener('keyup', function(e) {
-    if (document.activeElement &&
-       (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA"))
+    if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA"))
         return;
     if (document.activeElement && document.activeElement.id === "name") return;
     const key = e.key.toLowerCase();
@@ -222,7 +222,8 @@ function styleGUI() {
     gui.style.zIndex = "1000";
     gui.innerHTML = `
         <form id="gui-form" autocomplete="off">
-            <h1 style="color: #202020; font-size: 2.1rem; margin-bottom: 28px; letter-spacing: 1px;">Вход в игру</h1>
+            <h1 style="color: #202020; font-size: 2.1rem; margin-bottom: 10px; letter-spacing: 1px;">Игра котят</h1>
+            <div style="text-align:center; font-size:1.0rem; color:#444; margin-bottom: 18px;">(От Мисуку)</div>
             <input type="text" id="name" maxlength="16" placeholder="Имя" autocomplete="off" style="
                 font-size: 1.2rem;
                 padding: 12px 18px;
@@ -244,7 +245,7 @@ function styleGUI() {
                 cursor: pointer;
                 letter-spacing: 1px;
                 transition: background 0.2s;
-            ">Войти</button>
+            ">Играть</button>
         </form>
     `;
     document.getElementById('gui-form').onsubmit = function(e) {
@@ -330,19 +331,32 @@ function setupMouse() {
     });
 }
 
-// --- Универсальный обработчик выстрелов (и для мыши, и для тача, без дублей)
 function setupShooting() {
-    document.addEventListener('pointerdown', function(e) {
+    if (onPointerDownShoot) document.removeEventListener('pointerdown', onPointerDownShoot);
+    if (onPointerUpShoot) document.removeEventListener('pointerup', onPointerUpShoot);
+
+    const activePointers = new Set();
+
+    onPointerDownShoot = function(e) {
         if (!player) return;
         if (e.pointerType === 'mouse' && e.button !== 0) return;
-        // На мобиле вычисляем mouseAngle для тача (центр экрана)
+        if (activePointers.has(e.pointerId)) return;
+        activePointers.add(e.pointerId);
+
         if (e.pointerType !== 'mouse') {
-            let cx = window.innerWidth/2;
-            let cy = window.innerHeight/2;
+            let cx = window.innerWidth / 2;
+            let cy = window.innerHeight / 2;
             mouseAngle = Math.atan2(e.clientY - cy, e.clientX - cx);
         }
         shootFireball();
-    });
+    };
+
+    onPointerUpShoot = function(e) {
+        activePointers.delete(e.pointerId);
+    };
+
+    document.addEventListener('pointerdown', onPointerDownShoot);
+    document.addEventListener('pointerup', onPointerUpShoot);
 }
 
 function createWorldCanvas() {
@@ -393,7 +407,6 @@ function drawWorldBorder(ctx) {
     ctx.restore();
 }
 
-// --- Меньше миникарта на мобиле
 function createMinimap() {
     if (minimapElem) minimapElem.remove();
     minimapElem = document.createElement('canvas');
@@ -746,7 +759,6 @@ function updatePlayerCrown(players, leader) {
     }
 }
 
-// --- Меньше лидерборд на мобиле
 function showLeaderboard() {
     if (leaderboardElem) leaderboardElem.remove();
     leaderboardElem = document.createElement('div');
