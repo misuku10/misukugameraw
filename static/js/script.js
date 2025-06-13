@@ -33,6 +33,7 @@ const maxSpeed = 4;
 let velocity = { x: 0, y: 0 };
 
 let onPointerDownShoot, onPointerUpShoot;
+let joystickInUse = false;
 
 document.addEventListener('selectstart', e => e.preventDefault());
 document.addEventListener('mousedown', e => { if (e.detail > 1) e.preventDefault(); });
@@ -92,6 +93,7 @@ body.mobile #game-chat-gui, body.mobile #leaderboard {
         createJoystick();
         document.body.classList.add('mobile');
     }
+    setupShooting();
 });
 
 window.addEventListener("storage", function(e) {
@@ -319,7 +321,6 @@ function showCharacter(data) {
     };
     updateCharacterPosition();
     setupMouse();
-    setupShooting();
 }
 
 function setupMouse() {
@@ -339,6 +340,7 @@ function setupShooting() {
 
     onPointerDownShoot = function(e) {
         if (!player) return;
+        if (joystickInUse) return;
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         if (activePointers.has(e.pointerId)) return;
         activePointers.add(e.pointerId);
@@ -410,8 +412,8 @@ function drawWorldBorder(ctx) {
 function createMinimap() {
     if (minimapElem) minimapElem.remove();
     minimapElem = document.createElement('canvas');
-    minimapElem.width = isMobile ? 100 : 200;
-    minimapElem.height = isMobile ? 100 : 200;
+    minimapElem.width = isMobile ? 50 : 250;
+    minimapElem.height = isMobile ? 50 : 250;
     minimapElem.id = 'minimap';
     minimapElem.style.position = 'absolute';
     minimapElem.style.right = isMobile ? '8px' : '24px';
@@ -432,20 +434,22 @@ function drawMinimap() {
     let scale = minimapElem.width / worldSize;
     ctx.strokeStyle = "#bbb";
     ctx.lineWidth = 1.2;
-    ctx.font = isMobile ? "8px Arial" : "13px Arial";
+    ctx.font = isMobile ? "6px Arial" : "13px Arial";
     ctx.fillStyle = "#444";
     for (let row = 0; row < gridRows; row++) {
         for (let col = 0; col < gridCols; col++) {
             let x = col * gridSize * scale;
             let y = row * gridSize * scale;
             ctx.strokeRect(x, y, gridSize * scale, gridSize * scale);
-            ctx.fillText(gridNames[row][col], x + (isMobile ? 4 : 8), y + (isMobile ? 12 : 22));
+            if (minimapElem.width >= 100) {
+                ctx.fillText(gridNames[row][col], x + (isMobile ? 2 : 8), y + (isMobile ? 6 : 22));
+            }
         }
     }
     if (player) {
         ctx.fillStyle = "#f00";
         ctx.beginPath();
-        ctx.arc(player.x * scale, player.y * scale, isMobile ? 3.5 : 7, 0, 2 * Math.PI);
+        ctx.arc(player.x * scale, player.y * scale, isMobile ? 1.5 : 7, 0, 2 * Math.PI);
         ctx.fill();
         ctx.strokeStyle = "#000";
         ctx.lineWidth = 1;
@@ -457,7 +461,7 @@ function drawMinimap() {
         let px = p.x * scale;
         let py = p.y * scale;
         ctx.beginPath();
-        ctx.arc(px, py, isMobile ? 2.5 : 5, 0, 2 * Math.PI);
+        ctx.arc(px, py, isMobile ? 1 : 5, 0, 2 * Math.PI);
         ctx.fill();
     });
 }
@@ -914,6 +918,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         };
     }
+    createChatButton();
+    createChatCloseButton();
+    document.getElementById('game-chat-gui').style.display = "none";
 });
 
 function createJoystick() {
@@ -947,6 +954,7 @@ function createJoystick() {
         e.preventDefault();
         dragging = true;
         joystickData.active = true;
+        joystickInUse = true;
         handle.style.transition = '';
         document.body.style.userSelect = 'none';
     }, {passive: false});
@@ -965,9 +973,37 @@ function createJoystick() {
     joystick.addEventListener('touchend', e => {
         dragging = false;
         joystickData.active = false;
+        joystickInUse = false;
         joystickData.dx = 0; joystickData.dy = 0;
         handle.style.transition = 'all 0.2s';
         updateHandle(0, 0);
         document.body.style.userSelect = '';
     }, {passive: false});
+}
+
+function createChatButton() {
+    if (document.getElementById('open-chat-btn')) return;
+    if (!isMobile) return;
+    const btn = document.createElement('button');
+    btn.id = 'open-chat-btn';
+    btn.textContent = "Чат";
+    btn.className = 'chat-open-btn';
+    btn.onclick = () => {
+        document.getElementById('game-chat-gui').style.display = "flex";
+        btn.style.display = "none";
+    };
+    document.body.appendChild(btn);
+}
+function createChatCloseButton() {
+    if (document.getElementById('close-chat-btn')) return;
+    if (!isMobile) return;
+    const closeBtn = document.createElement('button');
+    closeBtn.id = 'close-chat-btn';
+    closeBtn.textContent = "×";
+    closeBtn.className = 'chat-close-btn';
+    closeBtn.onclick = () => {
+        document.getElementById('game-chat-gui').style.display = "none";
+        document.getElementById('open-chat-btn').style.display = "block";
+    };
+    document.getElementById('game-chat-gui').appendChild(closeBtn);
 }

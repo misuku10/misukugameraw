@@ -265,10 +265,26 @@ body.mobile #leaderboard table {
   font-size: 7px !important;
 }
 body.mobile #minimap {
-  width: 64px !important;
-  height: 64px !important;
+  width: 50px !important;
+  height: 50px !important;
+  max-width: 90vw;
+  max-height: 90vw;
   right: 8px !important;
   bottom: 8px !important;
+}
+#minimap {
+  width: 250px !important;
+  height: 250px !important;
+  max-width: 90vw;
+  max-height: 90vw;
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  background: #fff;
+  border: 2px solid #888;
+  border-radius: 8px;
+  z-index: 20;
+  opacity: 0.95;
 }
 @media (orientation: landscape) and (max-width: 900px) {
   body.mobile #game-chat-gui {
@@ -316,8 +332,8 @@ body.mobile #minimap {
     font-size: 7px !important;
   }
   body.mobile #minimap {
-    width: 40px !important;
-    height: 40px !important;
+    width: 50px !important;
+    height: 50px !important;
     right: 4px !important;
     bottom: 4px !important;
   }
@@ -345,4 +361,45 @@ body.mobile #game-chat-messages {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+.chat-open-btn {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  padding: 14px 30px;
+  background: #a26cf6;
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  box-shadow: 0 2px 18px #a26cf688;
+  cursor: pointer;
+  z-index: 10001;
+  transition: background 0.15s;
+}
+.chat-open-btn:hover {
+  background: #7f3fd5;
+}
+.chat-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: #a26cf6;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10002;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-close-btn:hover {
+  background: #7f3fd5;
 }
