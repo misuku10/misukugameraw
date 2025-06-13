@@ -117,8 +117,6 @@ body {
 #world-container {
   will-change: transform;
 }
-
-/* CHAT GUI — НА ВЕСЬ ЭКРАН НА МОБИЛЕ */
 #game-chat-gui {
   position: fixed;
   left: 22px;
@@ -185,8 +183,6 @@ body {
 #game-chat-form button:active {
   background: rgba(255,255,255,0.10);
 }
-
-/* МОБИЛКА: ЧАТ НА ВЕСЬ ЭКРАН */
 body.mobile #game-chat-gui {
   left: 0 !important;
   right: 0 !important;
@@ -249,8 +245,6 @@ body.mobile .chat-close-btn {
 body.mobile .chat-close-btn:hover {
   background: #7f3fd5 !important;
 }
-
-/* КНОПКА ЧАТ — МАЛЕНЬКАЯ, СЛЕВА ВВЕРХУ */
 .chat-open-btn {
   position: fixed;
   top: 16px;
@@ -270,8 +264,6 @@ body.mobile .chat-close-btn:hover {
 .chat-open-btn:hover {
   background: #7f3fd5;
 }
-
-/* ДЖОЙСТИК — МОБИЛКА, МАЛЕНЬКИЙ, ДВИГАЮЩИЙСЯ */
 body.mobile #joystick {
   left: 10px;
   bottom: 12px;
@@ -289,8 +281,6 @@ body.mobile #joystick-handle {
   box-shadow: 0 2px 9px #8881;
   transition: all 0.14s cubic-bezier(.7,.03,.26,.99);
 }
-
-/* МИНИКАРТА — ВСЕГДА ТЕКСТ (даже на мобилке) */
 body.mobile #minimap {
   width: 50px !important;
   height: 50px !important;
@@ -315,8 +305,6 @@ body.mobile #minimap {
   opacity: 0.95;
   font-size: 13px;
 }
-
-/* СКРОЛЛ ДЛЯ МОБИЛКИ */
 body.mobile #game-chat-messages::-webkit-scrollbar {
   width: 0 !important;
   background: transparent !important;
